@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "title": "WB Python Service Example",
+    "description": "Configuration schema for wb-python-service-example",
+    "properties": {
+        "mode": {
+            "title": "Work mode",
+            "type": "string",
+            "enum": [
+                "one_thread",
+                "threaded"
+            ],
+            "default": "one_thread",
+            "description": "Service operation mode"
+        }
+    },
+    "required": [
+        "mode"
+    ],
+    "translations": {
+        "ru": {
+            "WB Python Service Example": "Пример Python сервиса для WB",
+            "Work mode": "Режим работы",
+            "one_thread": "Однопоточный режим",
+            "threaded": "Многопоточный режим"
+        }
+    }
+}
