@@ -1,11 +1,11 @@
 [Unit]
-Description=WB Python Service Example
+Description=WB Python Service Template
 After=NetworkManager.service mosquitto.service
 
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/bin/wb-python-service-example
+ExecStart=/usr/bin/wb-python-service-template
 Restart=on-failure
 RestartSec=10
 RestartPreventExitStatus=2 6

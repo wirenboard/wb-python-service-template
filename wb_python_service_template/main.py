@@ -10,12 +10,12 @@ import jsonschema
 from wb_common.mqtt_client import MQTTClient
 
 # путь к пользовательским настройкам по умолчанию
-CONFIG_FILEPATH = "/etc/wb-python-service-example.conf"
+CONFIG_FILEPATH = "/etc/wb-python-service-template.conf"
 # указываем путь к статической схеме
-SCHEMA_FILEPATH = "/usr/share/wb-mqtt-confed/schemas/wb-python-service-example.schema.json"
+SCHEMA_FILEPATH = "/usr/share/wb-mqtt-confed/schemas/wb-python-service-template.schema.json"
 
 
-class OneThreadServiceExample:  # pylint:disable=too-few-public-methods
+class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
     def __init__(self):
         signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -75,7 +75,7 @@ class OneThreadServiceExample:  # pylint:disable=too-few-public-methods
         return 0
 
 
-class ThreadedServiceExample:  # pylint:disable=too-few-public-methods
+class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
     def __init__(self):
         self._term_event = threading.Event()
         self._queue = queue.Queue()
@@ -141,7 +141,7 @@ class ThreadedServiceExample:  # pylint:disable=too-few-public-methods
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description="MQTT Python Service Example")
+    parser = argparse.ArgumentParser(description="MQTT Python Service Template")
     parser.add_argument(
         "-c",
         "--config",
@@ -168,9 +168,9 @@ def main(argv):
             return 6
 
     if config["mode"] == "one_thread":
-        service = OneThreadServiceExample()
+        service = OneThreadServiceTemplate()
     else:
-        service = ThreadedServiceExample()
+        service = ThreadedServiceTemplate()
     return service.run()
 
 

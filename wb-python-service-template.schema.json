@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "title": "WB Python Service Example",
-    "description": "Configuration schema for wb-python-service-example",
+    "title": "WB Python Service Template",
+    "description": "Configuration schema for wb-python-service-template",
     "properties": {
         "mode": {
             "title": "Work mode",
@@ -20,7 +20,7 @@
     ],
     "translations": {
         "ru": {
-            "WB Python Service Example": "Пример Python сервиса для WB",
+            "WB Python Service Template": "Шаблон Python сервиса для WB",
             "Work mode": "Режим работы",
             "one_thread": "Однопоточный режим",
             "threaded": "Многопоточный режим"

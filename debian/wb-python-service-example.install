@@ -1,4 +1,0 @@
-bin/wb-python-service-example /usr/bin
-wb-python-service-example.schema.json /usr/share/wb-mqtt-confed/schemas
-wb-python-service-example.conf /etc
-10wb-python-service-example /etc/wb-configs.d

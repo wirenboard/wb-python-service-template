@@ -7,12 +7,12 @@ def get_version():
 
 
 setup(
-    name="wb-python-service-example",
+    name="wb-python-service-template",
     version=get_version(),
     maintainer="Wiren Board Team",
     maintainer_email="info@wirenboard.com",
-    description="Wiren Board Python Service Example",
-    url="https://github.com/wirenboard/wb-python-service-example",
-    packages=["wb_python_service_example"],
+    description="Wiren Board Python Service Template",
+    url="https://github.com/wirenboard/wb-python-service-template",
+    packages=["wb_python_service_template"],
     license="MIT",
 )
