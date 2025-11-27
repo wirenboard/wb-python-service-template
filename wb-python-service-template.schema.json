@@ -3,6 +3,10 @@
     "type": "object",
     "title": "WB Python Service Template",
     "description": "Configuration schema for wb-python-service-template",
+    "configFile": {
+        "path": "/etc/wb-python-service-template.conf",
+        "service": "wb-python-service-template"
+    },
     "properties": {
         "mode": {
             "title": "Work mode",
