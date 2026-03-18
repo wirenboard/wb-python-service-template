@@ -9,6 +9,10 @@ import threading
 import jsonschema
 from wb_common.mqtt_client import MQTTClient
 
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
+EXIT_CONFIG_ERROR = 6
+
 # путь к пользовательским настройкам по умолчанию
 CONFIG_FILEPATH = "/etc/wb-python-service-template.conf"
 # указываем путь к статической схеме
@@ -66,20 +70,23 @@ class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
             self._client.loop_forever()
         except ConnectionError:
             print("MQTT connection error!")
-            return 1
+            return EXIT_FAILURE
 
         if self._error:
             print(f"Error occurred: {self._error}")
-            return 1
+            return EXIT_FAILURE
 
-        return 0
+        return EXIT_SUCCESS
 
 
 class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
     def __init__(self):
         self._term_event = threading.Event()
         self._queue = queue.Queue()
+
         signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+        signal.signal(signal.SIGHUP, self._signal_handler)
 
         self._client = MQTTClient("test_client")
         self._client.on_connect = self._on_connect
@@ -131,13 +138,13 @@ class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
             self._do_work()
         except ConnectionError:
             print("MQTT connection error!")
-            return 1
+            return EXIT_FAILURE
         except RuntimeError:
             print("Failure! Stopping MQTT client")
             self._client.stop()
-            return 1
+            return EXIT_FAILURE
 
-        return 0
+        return EXIT_SUCCESS
 
 
 def main(argv):
@@ -152,7 +159,7 @@ def main(argv):
     args = parser.parse_args(argv[1:])
     if not os.path.isfile(args.config):
         print(f"Configuration file not found: {args.config}")
-        return 6
+        return EXIT_CONFIG_ERROR
 
     with open(args.config, "r", encoding="utf-8") as config_file, open(
         SCHEMA_FILEPATH, "r", encoding="utf-8"
@@ -165,7 +172,7 @@ def main(argv):
             )
         except jsonschema.ValidationError as e:
             print(f"Configuration validation failed: {e.message}")
-            return 6
+            return EXIT_CONFIG_ERROR
 
     if config["mode"] == "one_thread":
         service = OneThreadServiceTemplate()
