@@ -99,3 +99,57 @@ _Целевая система_ - куда устанавливается пак
  - **Почему в Python-библиотеках не пишем Multi-Arch в пакетах?**
 
    Как минимум потому что это не делают даже в Debian.
+
+## Перед контрибьютом
+
+Перед тем как открывать PR, убедитесь, что:
+
+1) Код проходит тесты (`pytest tests/`);
+2) Концы строк во всех файлах остаются `LF` (это обеспечивает `.gitattributes`);
+3) Пакет успешно собирается и на выходе получается deb-файл;
+4) Пакет проверен на реальном контроллере:
+   - Устанавливается;
+   - После установки импортируется namespace-пакет;
+   - Сервис запускается сам после установки;
+   - Сервис автоматически стартует после перезагрузки контроллера;
+   - Пакет удаляется.
+
+### Проверка сборки на контроллере
+
+Выполняется на самом Wiren Board (арх `all`, подойдёт любой). Репозитории WB на контроллере должны быть настроены — из них тянется `python3-wb-common`.
+
+```bash
+# 1. Инструменты сборки (один раз на контроллер)
+sudo apt update
+sudo apt install -y build-essential devscripts equivs git
+
+# 2. Копия из своей ветки
+git clone -b <ваша-ветка> \
+  https://github.com/wirenboard/wb-python-service-template.git
+cd wb-python-service-template
+
+# 3. Build-зависимости из debian/control и сборка пакета
+sudo mk-build-deps -ir debian/control
+dpkg-buildpackage -us -uc -b
+
+# 4. Установка собранного пакета
+sudo apt install -y ../wb-python-service-template_*.deb
+
+# 5. Проверка импорта namespace-пакета
+python3 -c "import wb.python_service_template.main as m; print('import OK:', m.main)"
+
+# 6. Проверка работы сервиса
+systemctl is-enabled wb-python-service-template   # ожидается: enabled
+systemctl status wb-python-service-template       # ожидается: active (running)
+
+# 7. Проверка автозапуска после перезагрузки
+sudo reboot
+# после загрузки снова зайти по SSH и проверить, что сервис поднялся сам:
+systemctl status wb-python-service-template       # ожидается: active (running)
+
+# 8. Удаление после проверки
+sudo apt purge -y wb-python-service-template
+```
+
+При успешной сборке `pytest` прогонит `tests/` (шаг сборки `dh_auto_test`), а после установки
+сервис включится автоматически благодаря секции `[Install]` в юните.
