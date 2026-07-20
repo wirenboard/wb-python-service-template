@@ -116,7 +116,8 @@ _Целевая система_ - куда устанавливается пак
 
 ### Проверка сборки на контроллере
 
-Выполняется на самом Wiren Board (арх `all`, подойдёт любой). Репозитории WB на контроллере должны быть настроены — из них тянется `python3-wb-common`.
+Выполняется на самом Wiren Board (арх `all`, подойдёт любой).
+Репозитории WB на контроллере должны быть настроены — из них тянется `python3-wb-common`.
 
 ```bash
 # 1. Инструменты сборки (один раз на контроллер)
@@ -132,23 +133,27 @@ cd wb-python-service-template
 # 3. Build-зависимости из debian/control и сборка пакета
 sudo mk-build-deps -ir debian/control
 dpkg-buildpackage -us -uc -b
+```
 
-# 4. Установка собранного пакета
+Далее нужно проверить что пакета корректно собран и сервис поднимается сам
+
+```bash
+# 1. Установка собранного пакета
 sudo apt install -y ../wb-python-service-template_*.deb
 
-# 5. Проверка импорта namespace-пакета
+# 2. Проверка импорта namespace-пакета
 python3 -c "import wb.python_service_template.main as m; print('import OK:', m.main)"
 
-# 6. Проверка работы сервиса
+# 3. Проверка работы сервиса
 systemctl is-enabled wb-python-service-template   # ожидается: enabled
 systemctl status wb-python-service-template       # ожидается: active (running)
 
-# 7. Проверка автозапуска после перезагрузки
+# 4. Проверка автозапуска после перезагрузки
 sudo reboot
 # после загрузки снова зайти по SSH и проверить, что сервис поднялся сам:
 systemctl status wb-python-service-template       # ожидается: active (running)
 
-# 8. Удаление после проверки
+# 5. Удаление после проверки
 sudo apt purge -y wb-python-service-template
 ```
 
