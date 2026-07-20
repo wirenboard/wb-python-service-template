@@ -124,7 +124,8 @@ sudo apt update
 sudo apt install -y build-essential devscripts equivs git
 
 # 2. Копия из своей ветки
-git clone -b <ваша-ветка> \
+GIT_BRANCH_NAME="feature/branch-name"
+git clone -b "${GIT_BRANCH_NAME}" --single-branch \
   https://github.com/wirenboard/wb-python-service-template.git
 cd wb-python-service-template
 
