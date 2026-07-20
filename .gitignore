@@ -2,3 +2,7 @@
 .vscode/
 .coveragerc
 pyproject.toml
+
+# Python
+__pycache__/
+*.py[cod]

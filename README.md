@@ -2,7 +2,7 @@
 
 ### Сервис
 
- - **Для создания mqtt клиента** используйте `MQTTClient` (на базе paho) из библиотеки [wb_common](https://github.com/wirenboard/wb-common/blob/master/wb_common/mqtt_client.py).  Вы можете использовать функцию клиента start(), которая по умолчанию запускает клиента в [отдельном потоке](wb_python_service_template/main.py#L78). Также вы можете выключить создание отдельного потока и вручную запускать клиента через start() + loop_forever() в [текущем потоке](wb_python_service_template/main.py#L18). Использовать функцию loop() для работы не рекомендуется, тк она не делает автоматический реконнект в случае разрыва соединения с брокером. 
+ - **Для создания mqtt клиента** используйте `MQTTClient` (на базе paho) из библиотеки [wb_common](https://github.com/wirenboard/wb-common/blob/master/wb_common/mqtt_client.py).  Вы можете использовать функцию клиента start(), которая по умолчанию запускает клиента в [отдельном потоке](wb/python_service_template/main.py#L78). Также вы можете выключить создание отдельного потока и вручную запускать клиента через start() + loop_forever() в [текущем потоке](wb/python_service_template/main.py#L18). Использовать функцию loop() для работы не рекомендуется, тк она не делает автоматический реконнект в случае разрыва соединения с брокером. 
 
  - **Для перехвата сигналов** используйте библиотеку [signal](https://docs.python.org/3/library/signal.html): signal.SIGTERM (остановка через systemctl stop) и signal.SIGINT (остановка через Ctrl-C в консоли). В обработчике сигнала нужно вызвать stop(). Если вы используете loop_forever(), то в обработчике не нужно принудительно завершать основной процесс, выполнение после обработки сигнала вернётся в loop_forever(), которая завершится. Больше информации и примеров http://www.steves-internet-guide.com/client-connections-python-mqtt/.
 
@@ -99,3 +99,63 @@ _Целевая система_ - куда устанавливается пак
  - **Почему в Python-библиотеках не пишем Multi-Arch в пакетах?**
 
    Как минимум потому что это не делают даже в Debian.
+
+## Перед контрибьютом
+
+Перед тем как открывать PR, убедитесь, что:
+
+1) Код проходит тесты (`pytest tests/`);
+2) Концы строк во всех файлах остаются `LF` (это обеспечивает `.gitattributes`);
+3) Пакет успешно собирается и на выходе получается deb-файл;
+4) Пакет проверен на реальном контроллере:
+   - Устанавливается;
+   - После установки импортируется namespace-пакет;
+   - Сервис запускается сам после установки;
+   - Сервис автоматически стартует после перезагрузки контроллера;
+   - Пакет удаляется.
+
+### Проверка сборки на контроллере
+
+Выполняется на самом Wiren Board (арх `all`, подойдёт любой).
+Репозитории WB на контроллере должны быть настроены — из них тянется `python3-wb-common`.
+
+```bash
+# 1. Инструменты сборки (один раз на контроллер)
+sudo apt update
+sudo apt install -y build-essential devscripts equivs git
+
+# 2. Копия из своей ветки
+GIT_BRANCH_NAME="feature/branch-name"
+git clone -b "${GIT_BRANCH_NAME}" --single-branch \
+  https://github.com/wirenboard/wb-python-service-template.git
+cd wb-python-service-template
+
+# 3. Build-зависимости из debian/control и сборка пакета
+sudo mk-build-deps -ir debian/control
+dpkg-buildpackage -us -uc -b
+```
+
+Далее нужно проверить что пакета корректно собран и сервис поднимается сам
+
+```bash
+# 1. Установка собранного пакета
+sudo apt install -y ../wb-python-service-template_*.deb
+
+# 2. Проверка импорта namespace-пакета
+python3 -c "import wb.python_service_template.main as m; print('import OK:', m.main)"
+
+# 3. Проверка работы сервиса
+systemctl is-enabled wb-python-service-template   # ожидается: enabled
+systemctl status wb-python-service-template       # ожидается: active (running)
+
+# 4. Проверка автозапуска после перезагрузки
+sudo reboot
+# после загрузки снова зайти по SSH и проверить, что сервис поднялся сам:
+systemctl status wb-python-service-template       # ожидается: active (running)
+
+# 5. Удаление после проверки
+sudo apt purge -y wb-python-service-template
+```
+
+При успешной сборке `pytest` прогонит `tests/` (шаг сборки `dh_auto_test`), а после установки
+сервис включится автоматически благодаря секции `[Install]` в юните.

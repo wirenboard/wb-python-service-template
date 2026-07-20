@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from setuptools import setup
 
 
@@ -13,6 +15,13 @@ setup(
     maintainer_email="info@wirenboard.com",
     description="Wiren Board Python Service Template",
     url="https://github.com/wirenboard/wb-python-service-template",
-    packages=["wb_python_service_template"],
     license="MIT",
+    packages=[
+        # "wb"                        # Explicitly excluded: provided by base package
+        "wb.python_service_template",
+    ],
+    # Other files (scripts, configs and etc):
+    # - Installed by debian/install file
+    # Requirements:
+    # - Installed from debian/control file
 )
