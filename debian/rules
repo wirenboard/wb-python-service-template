@@ -1,4 +1,13 @@
 #!/usr/bin/make -f
 
+include /usr/share/dpkg/pkg-info.mk
+
+# dpkg and PEP 440 both accept 1.0 and 1.2.3.4, so only this check enforces MAJOR.MINOR.PATCH.
+# CI appends ~exp~<branch>~<n>~g<sha> on dev branches, so the ~ tail must stay allowed.
+override_dh_auto_test:
+	echo "$(DEB_VERSION)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(~|$$)' \
+		|| { echo "debian/changelog version '$(DEB_VERSION)' is not MAJOR.MINOR.PATCH"; exit 1; }
+	dh_auto_test
+
 %:
 	dh $@ --with python3 --buildsystem=pybuild
