@@ -2,15 +2,11 @@
 
 from setuptools import setup
 
-
-def get_version():
-    with open("debian/changelog", "r", encoding="utf-8") as f:
-        return f.readline().split()[1][1:-1].split("~")[0]
-
+from wb.python_service_template.version import get_version_from_changelog
 
 setup(
     name="wb-python-service-template",
-    version=get_version(),
+    version=get_version_from_changelog(),
     maintainer="Wiren Board Team",
     maintainer_email="info@wirenboard.com",
     description="Wiren Board Python Service Template",
