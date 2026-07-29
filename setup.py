@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import setup
+from setuptools import find_namespace_packages, setup
 
 from wb.python_service_template.version import get_version_from_changelog
 
@@ -12,10 +12,9 @@ setup(
     description="Wiren Board Python Service Template",
     url="https://github.com/wirenboard/wb-python-service-template",
     license="MIT",
-    packages=[
-        # "wb"                        # Explicitly excluded: provided by base package
-        "wb.python_service_template",
-    ],
+    # Subpackages are picked up automatically. "wb" itself is not matched on purpose,
+    # it is a namespace package provided by the base package.
+    packages=find_namespace_packages(include=["wb.python_service_template*"]),
     # Other files (scripts, configs and etc):
     # - Installed by debian/install file
     # Requirements:
