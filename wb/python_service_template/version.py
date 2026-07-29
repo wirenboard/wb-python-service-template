@@ -18,7 +18,7 @@ def get_version():
     return version(__package__)
 
 
-def parse_changelog_version(changelog_line):
+def parse_changelog_version(changelog_line: str):
     """
     Pull the version out of the first line of debian/changelog.
 
@@ -26,9 +26,9 @@ def parse_changelog_version(changelog_line):
     version, so it is dropped.
 
     Examples:
-        >>> parse_changelog_version("wb-python-service-template (1.0.0) stable; urgency=medium")
+        >>> parse_changelog_version("wb-foo (1.0.0) stable; urgency=medium")
         '1.0.0'
-        >>> parse_changelog_version("wb-python-service-template (10.20.300) stable; urgency=low")
+        >>> parse_changelog_version("wb-foo (10.20.300) stable; urgency=low")
         '10.20.300'
         >>> parse_changelog_version("wb-foo (1.0.0~exp~branch~2~gdeadbee) stable; urgency=medium")
         '1.0.0'
