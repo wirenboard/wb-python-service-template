@@ -1,4 +1,5 @@
-"""Single place that knows where the package version comes from.
+"""
+Single place that knows where the package version comes from.
 
 At runtime the version is read from the installed package metadata. That metadata is filled by
 setup.py at build time, which is the only moment when debian/changelog is available.
@@ -6,19 +7,20 @@ setup.py at build time, which is the only moment when debian/changelog is availa
 
 from importlib.metadata import version
 
-DIST_NAME = "wb-python-service-template"
-
 # Relative to the source root, which is the working directory setup.py is always run from.
 CHANGELOG_FILEPATH = "debian/changelog"
 
 
 def get_version():
-    """Version of the installed package. Use this at runtime."""
-    return version(DIST_NAME)
+    """
+    Version of the installed package. Use this at runtime.
+    """
+    return version(__package__)
 
 
 def parse_changelog_version(changelog_line):
-    """Pull the version out of the first line of debian/changelog.
+    """
+    Pull the version out of the first line of debian/changelog.
 
     Everything after ~ is the suffix CI adds on dev branches, and PEP 440 allows no ~ in a
     version, so it is dropped.
@@ -35,6 +37,8 @@ def parse_changelog_version(changelog_line):
 
 
 def get_version_from_changelog():
-    """Version for the packaging metadata. Build time only, called by setup.py."""
+    """
+    Version for the packaging metadata. Build time only, called by setup.py.
+    """
     with open(CHANGELOG_FILEPATH, "r", encoding="utf-8") as f:
         return parse_changelog_version(f.readline())
