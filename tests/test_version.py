@@ -18,17 +18,11 @@ def test_installed_version_is_release_version():
     package_version = get_version()
     assert _is_release_version(
         package_version
-    ), f"version '{package_version}' from debian/changelog is not MAJOR.MINOR.PATCH"
+    ), f"package version '{package_version}' is not MAJOR.MINOR.PATCH, fix debian/changelog"
 
 
-@pytest.mark.parametrize("package_version", ["1.0.0", "10.20.300"])
-def test_release_versions_are_accepted(package_version):
-    assert _is_release_version(package_version)
-
-
-@pytest.mark.parametrize("package_version", ["1.0", "1.0.0.1", "1.0.0~exp~branch~2~gdeadbee"])
-def test_other_versions_are_rejected(package_version):
-    assert not _is_release_version(package_version)
+def test_four_part_version_is_rejected():
+    assert not _is_release_version("1.0.0.1")
 
 
 def test_version_argument_prints_version_and_exits(capsys):

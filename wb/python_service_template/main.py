@@ -5,6 +5,7 @@ import queue
 import signal
 import sys
 import threading
+from importlib.metadata import PackageNotFoundError
 
 import jsonschema
 from wb_common.mqtt_client import MQTTClient
@@ -30,7 +31,10 @@ class _PrintVersionAction(argparse.Action):
         super().__init__(option_strings, dest, nargs=0, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print(get_version())
+        try:
+            print(get_version())
+        except PackageNotFoundError:
+            parser.exit(EXIT_FAILURE, "Package metadata not found, install the package to use --version\n")
         parser.exit()
 
 

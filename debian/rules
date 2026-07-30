@@ -1,12 +1,10 @@
 #!/usr/bin/make -f
 
-# tests/test_version.py reads the version from the package metadata, and pybuild writes that
-# metadata only at the install stage, which runs after the tests. Generate it into the build
-# directory beforehand and remove it afterwards, so the test stage leaves the tree as it found it.
+# Creates the package metadata in the build directory before the tests run. tests/test_version.py
+# reads the version from that metadata, and pybuild creates it on its own only at the install
+# stage, which comes after the tests. No cleanup is needed afterwards, pybuild deletes the
+# metadata from the build directory itself before installing.
 export PYBUILD_BEFORE_TEST=cd {dir} && {interpreter} setup.py --quiet egg_info --egg-base {build_dir}
-# .pytest_cache is swept up here too. With pytest.ini the rootdir is the build directory, so the
-# cache lands next to the package instead of inside the tests copy pybuild removes on its own.
-export PYBUILD_AFTER_TEST=rm -rf {build_dir}/*.egg-info {build_dir}/.pytest_cache
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
