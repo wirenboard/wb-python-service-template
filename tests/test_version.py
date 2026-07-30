@@ -33,7 +33,7 @@ def test_other_versions_are_rejected(package_version):
 
 def test_version_argument_prints_version_and_exits(capsys):
     with pytest.raises(SystemExit) as exit_info:
-        main.main(["wb-python-service-template", "--version"])
+        main.main(["wb-foo", "--version"])
 
     assert exit_info.value.code == 0
     assert capsys.readouterr().out.strip() == get_version()
