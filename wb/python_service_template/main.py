@@ -5,9 +5,12 @@ import queue
 import signal
 import sys
 import threading
+from importlib.metadata import PackageNotFoundError
 
 import jsonschema
 from wb_common.mqtt_client import MQTTClient
+
+from wb.python_service_template.version import get_version
 
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -17,6 +20,22 @@ EXIT_CONFIG_ERROR = 6
 CONFIG_FILEPATH = "/etc/wb-python-service-template.conf"
 # указываем путь к статической схеме
 SCHEMA_FILEPATH = "/usr/share/wb-mqtt-confed/schemas/wb-python-service-template.schema.json"
+
+
+class _PrintVersionAction(argparse.Action):
+    """
+    Reads the version only when the flag is actually used.
+    """
+
+    def __init__(self, option_strings, dest, **kwargs):
+        super().__init__(option_strings, dest, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        try:
+            print(get_version())
+        except PackageNotFoundError:
+            parser.exit(EXIT_FAILURE, "Package metadata not found, install the package to use --version\n")
+        parser.exit()
 
 
 class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
@@ -149,6 +168,7 @@ class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
 
 def main(argv):
     parser = argparse.ArgumentParser(description="MQTT Python Service Template")
+    parser.add_argument("--version", action=_PrintVersionAction, help="show package version and exit")
     parser.add_argument(
         "-c",
         "--config",

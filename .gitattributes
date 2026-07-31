@@ -13,6 +13,7 @@
 .gitattributes text=auto eol=lf
 .python-version text=auto eol=lf
 Jenkinsfile text=auto eol=lf
+pytest.ini text=auto eol=lf
 10wb-python-service-template text=auto eol=lf
 
 # Folder ./bin
