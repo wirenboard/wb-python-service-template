@@ -10,22 +10,22 @@ from wb.python_service_template.version import get_version
 RELEASE_VERSION_PATTERN = re.compile(r"\d+\.\d+\.\d+")
 
 
-def _is_release_version(package_version):
+def _is_release_version(package_version: str) -> bool:
     return RELEASE_VERSION_PATTERN.fullmatch(package_version) is not None
 
 
-def test_installed_version_is_release_version():
+def test_installed_version_is_release_version() -> None:
     package_version = get_version()
     assert _is_release_version(
         package_version
     ), f"package version '{package_version}' is not MAJOR.MINOR.PATCH, fix debian/changelog"
 
 
-def test_four_part_version_is_rejected():
+def test_four_part_version_is_rejected() -> None:
     assert not _is_release_version("1.0.0.1")
 
 
-def test_version_argument_prints_version_and_exits(capsys):
+def test_version_argument_prints_version_and_exits(capsys: pytest.CaptureFixture) -> None:
     with pytest.raises(SystemExit) as exit_info:
         main.main(["wb-foo", "--version"])
 

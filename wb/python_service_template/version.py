@@ -11,14 +11,14 @@ from importlib.metadata import version
 CHANGELOG_FILEPATH = "debian/changelog"
 
 
-def get_version():
+def get_version() -> str:
     """
     Version of the installed package. Use this at runtime.
     """
     return version(__package__)
 
 
-def parse_changelog_version(changelog_line: str):
+def parse_changelog_version(changelog_line: str) -> str:
     """
     Pull the version out of the first line of debian/changelog.
 
@@ -36,7 +36,7 @@ def parse_changelog_version(changelog_line: str):
     return changelog_line.split()[1][1:-1].split("~")[0]
 
 
-def get_version_from_changelog():
+def get_version_from_changelog() -> str:
     """
     Version for the packaging metadata. Build time only, called by setup.py.
     """

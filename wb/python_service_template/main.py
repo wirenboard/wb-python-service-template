@@ -6,6 +6,8 @@ import signal
 import sys
 import threading
 from importlib.metadata import PackageNotFoundError
+from types import FrameType
+from typing import Any, Optional
 
 import jsonschema
 from wb_common.mqtt_client import MQTTClient
@@ -27,10 +29,16 @@ class _PrintVersionAction(argparse.Action):
     Reads the version only when the flag is actually used.
     """
 
-    def __init__(self, option_strings, dest, **kwargs):
+    def __init__(self, option_strings: list[str], dest: str, **kwargs: Any) -> None:
         super().__init__(option_strings, dest, nargs=0, **kwargs)
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Any,
+        option_string: Optional[str] = None,
+    ) -> None:
         try:
             print(get_version())
         except PackageNotFoundError:
@@ -39,7 +47,13 @@ class _PrintVersionAction(argparse.Action):
 
 
 class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
-    def __init__(self):
+    """
+    Example service that serves MQTT messages in the current thread.
+
+    Suits a service whose only job is to react to an incoming message.
+    """
+
+    def __init__(self) -> None:
         signal.signal(signal.SIGINT, self._signal_handler)
 
         self._client = MQTTClient("test_client", is_threaded=False)
@@ -50,7 +64,7 @@ class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
         self._count = 0
         self._error = None
 
-    def _on_connect(self, _client, _userdata, _flags, rc):
+    def _on_connect(self, _client: MQTTClient, _userdata: Any, _flags: Any, rc: int) -> None:
         if rc != 0:
             print("MQTT client connected with rc %s", rc)
             return
@@ -65,11 +79,11 @@ class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
             print("Republish controls")
             # перепубликация контролов
 
-    def _on_disconnect(self, _client, _userdata, _flags):
+    def _on_disconnect(self, _client: MQTTClient, _userdata: Any, _flags: Any) -> None:
         self._mqtt_was_disconected = True
         print("MQTT client disconnected")
 
-    def _on_message(self, _client, _userdata, _msg):
+    def _on_message(self, _client: MQTTClient, _userdata: Any, _msg: Any) -> None:
         self._count += 1
         if self._count == 10:
             self._error = RuntimeError("Simulate failure")
@@ -78,11 +92,17 @@ class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
         print("Do work, publish result")
         # выполнение работы после получения сообщения и публикация результата
 
-    def _signal_handler(self, _signum, _frame):
+    def _signal_handler(self, _signum: int, _frame: Optional[FrameType]) -> None:
         print("Termination signal received, stopping MQTT client")
         self._client.stop()
 
-    def run(self):
+    def run(self) -> int:
+        """
+        Serves messages until the client is stopped by a signal or by a failure.
+
+        Returns:
+            EXIT_SUCCESS on a clean stop, EXIT_FAILURE if the connection failed or the work did.
+        """
         try:
             print("Starting MQTT client")
             self._client.start()
@@ -99,7 +119,13 @@ class OneThreadServiceTemplate:  # pylint:disable=too-few-public-methods
 
 
 class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
-    def __init__(self):
+    """
+    Example service that serves MQTT messages in a separate thread.
+
+    Suits a service with its own work loop, which has to keep going regardless of messages.
+    """
+
+    def __init__(self) -> None:
         self._term_event = threading.Event()
         self._queue = queue.Queue()
 
@@ -113,7 +139,7 @@ class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
         self._client.on_message = self._on_message
         self._mqtt_was_disconected = False
 
-    def _on_connect(self, _client, _userdata, _flags, rc):
+    def _on_connect(self, _client: MQTTClient, _userdata: Any, _flags: Any, rc: int) -> None:
         if rc != 0:
             print("MQTT client connected with rc %s", rc)
             return
@@ -128,19 +154,19 @@ class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
             print("Republish controls")
             # перепубликация контролов
 
-    def _on_disconnect(self, _client, _userdata, _flags):
+    def _on_disconnect(self, _client: MQTTClient, _userdata: Any, _flags: Any) -> None:
         self._mqtt_was_disconected = True
         print("MQTT client disconnected")
 
-    def _on_message(self, _client, _userdata, msg):
+    def _on_message(self, _client: MQTTClient, _userdata: Any, msg: Any) -> None:
         self._queue.put(msg.payload.decode("utf-8"))
 
-    def _signal_handler(self, _signum, _frame):
+    def _signal_handler(self, _signum: int, _frame: Optional[FrameType]) -> None:
         print("Termination signal received, stopping MQTT client")
         self._term_event.set()
         self._client.stop()
 
-    def _do_work(self):
+    def _do_work(self) -> None:
         count = 0
         while count != 10 and not self._term_event.is_set():
             if not self._queue.empty():
@@ -150,7 +176,13 @@ class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
         if count == 10:
             raise RuntimeError("Simulate failure")
 
-    def run(self):
+    def run(self) -> int:
+        """
+        Runs the work loop until it finishes or a signal arrives.
+
+        Returns:
+            EXIT_SUCCESS on a clean stop, EXIT_FAILURE if the connection failed or the work did.
+        """
         try:
             print("Starting MQTT client")
             self._client.start()
@@ -166,7 +198,16 @@ class ThreadedServiceTemplate:  # pylint:disable=too-few-public-methods
         return EXIT_SUCCESS
 
 
-def main(argv):
+def main(argv: list[str]) -> int:
+    """
+    Reads the configuration and runs the service the configuration asks for.
+
+    Args:
+        argv: Command line arguments, argv[0] is the program name and is not used.
+
+    Returns:
+        One of EXIT_SUCCESS, EXIT_FAILURE or EXIT_CONFIG_ERROR.
+    """
     parser = argparse.ArgumentParser(description="MQTT Python Service Template")
     parser.add_argument("--version", action=_PrintVersionAction, help="show package version and exit")
     parser.add_argument(
