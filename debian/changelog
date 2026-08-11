@@ -1,3 +1,10 @@
+wb-python-service-template (1.0.1) stable; urgency=medium
+
+  * Clean up /etc/wb-python-service-template.conf on purge
+  * Bump debhelper compat level to 13
+
+ -- Ilya Tikhonyuk <ilya.tikhonyuk@wirenboard.com>  Tue, 11 Aug 2026 15:25:00 +0300
+
 wb-python-service-template (1.0.0) stable; urgency=medium
 
   * Initial release.
