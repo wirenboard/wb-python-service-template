@@ -208,7 +208,9 @@ def main(argv: list[str]) -> int:
     Returns:
         One of EXIT_SUCCESS, EXIT_FAILURE or EXIT_CONFIG_ERROR.
     """
-    parser = argparse.ArgumentParser(description="MQTT Python Service Template")
+    parser = argparse.ArgumentParser(
+        description="MQTT Python Service Template", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("--version", action=_PrintVersionAction, help="show package version and exit")
     parser.add_argument(
         "-c",
