@@ -128,6 +128,28 @@ _Целевая система_ - куда устанавливается пак
  - **Резервное копирование конфигов**
 
    Сервис [wb-configs-early](https://github.com/wirenboard/wb-configs/blob/master/debian/wb-configs.wb-configs-early.service) умеет делать резервное копирование файлов перед началом работы системы и перед выключением. Он перемещает сам файл конфига в раздел, который не сбрасывается при установке обновлений, а сам конфиг в исходном расположении `/etc/` заменяет на симлинк. Для этого нужно в папку `/etc/wb-configs.d` положить скрипт, который вызовет `wb_move` для всех нужных конфигов (в данном примере это `10wb-python-service-template`).
+
+   Если сервис сам пишет конфиг под `wb_move` через временный файл, этот файл создается рядом с настоящим, в `/mnt/data`. Иначе переименование заменит симлинк в `/etc` обычным файлом, и после перезагрузки правки пропадут.
+
+   ```python
+   def save_config(path: Path, content: str) -> None:
+       path = path.resolve()  # файл в /mnt/data, а не симлинк в /etc
+       with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, delete=False) as tmp:
+           tmp.write(content)
+       Path(tmp.name).replace(path)
+   ```
+
+   Такую запись покрывают тестом через симлинк и проверяют на стенде с перезагрузкой.
+
+   ```python
+   def test_save_config_keeps_symlink(tmp_path: Path) -> None:
+       real = tmp_path / "real.conf"
+       link = tmp_path / "link.conf"
+       link.symlink_to(real)
+       save_config(link, "{}")
+       assert link.is_symlink()
+       assert real.read_text(encoding="utf-8") == "{}"
+   ```
    
 
 ## FAQ по сборке и пакетированию для продвинутых
