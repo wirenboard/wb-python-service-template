@@ -11,7 +11,7 @@ setup(
     maintainer_email="info@wirenboard.com",
     description="Wiren Board Python Service Template",
     url="https://github.com/wirenboard/wb-python-service-template",
-    license="MIT",
+    license="MIT-WB",
     # Matches every subpackage of wb. "wb" itself stays out, it comes from the base package.
     packages=find_namespace_packages(include=["wb.*"]),
     # Other files (scripts, configs and etc):
